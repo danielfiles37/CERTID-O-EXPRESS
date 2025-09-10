@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido de Certidão - Estilo Fast-Food</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            width: 95%;
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+        .step-section {
+            display: none;
+        }
+        .step-section.active {
+            display: block;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .progress {
+            height: 100%;
+            background-color: #10b981;
+            transition: width 0.3s ease-in-out;
+        }
+        .btn-primary {
+            @apply bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-emerald-600 transition duration-300 transform hover:scale-105;
+        }
+        .btn-secondary {
+            @apply bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl hover:bg-gray-300 transition duration-300 transform hover:scale-105;
+        }
+        .btn-step {
+            @apply w-full text-left py-4 px-6 mb-4 text-gray-800 font-medium bg-gray-100 rounded-xl hover:bg-gray-200 transition duration-200 shadow-md;
+        }
+        .input-group label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+        .input-group input, .input-group textarea {
+            @apply w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200;
+        }
+        .payment-input-group input {
+            @apply w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition duration-200;
+        }
+        /* Custom modal for alerts */
+        #message-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #message-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Pedido de Certidão</h1>
+        <p class="text-center text-gray-600 mb-8">3° Registro de Imóveis</p>
+
+        <!-- Barra de Progresso -->
+        <div class="progress-bar">
+            <div id="progress-indicator" class="progress" style="width: 0%;"></div>
+        </div>
+
+        <!-- Passo 0: Menu Inicial -->
+        <div id="step-0" class="step-section active">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">O que você gostaria de fazer?</h2>
+            <div class="flex flex-col">
+                <button id="start-new-order" class="btn-step mb-4">
+                    Fazer Novo Pedido
+                </button>
+                <button id="go-to-tracking" class="btn-step">
+                    Acompanhar Pedido
+                </button>
+            </div>
+            
+            <hr class="my-8">
+
+            <div class="text-center">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Modelos de Pedido para Teste</h3>
+                <p class="text-sm text-gray-500 mb-4">Use esses dados para testar a função "Acompanhar Pedido".</p>
+                
+                <table class="w-full text-sm text-left text-gray-500 rounded-lg overflow-hidden shadow-md">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Número do Pedido</th>
+                            <th scope="col" class="px-6 py-3">Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">A1B2C3D4</td>
+                            <td class="px-6 py-4">Certidão de Inteiro Teor</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">E5F6G7H8</td>
+                            <td class="px-6 py-4">Certidão de Ônus Reais</td>
+                        </tr>
+                        <tr class="bg-white hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">I9J0K1L2</td>
+                            <td class="px-6 py-4">Certidão de Inteiro Teor</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Passo 0a: Acompanhar Pedido -->
+        <div id="step-0a" class="step-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Acompanhar Pedido</h2>
+            <div class="space-y-4">
+                <div class="input-group">
+                    <label for="track-order-number">Número do Pedido</label>
+                    <input type="text" id="track-order-number" placeholder="Digite o número do seu pedido" class="p-3">
+                </div>
+                <div class="flex justify-center mt-4">
+                    <button id="track-order-btn" class="btn-primary w-full">Ver Status</button>
+                </div>
+                <div id="tracking-result" class="bg-gray-100 p-4 rounded-lg mt-4 text-center hidden">
+                    <p id="tracking-message" class="text-lg font-semibold text-gray-700"></p>
+                    <p id="tracking-status" class="text-2xl font-bold mt-2"></p>
+                </div>
+            </div>
+            <div class="flex justify-between mt-8">
+                <button id="back-step-0a" class="btn-secondary">Voltar</button>
+            </div>
+        </div>
+
+        <!-- Passo 1: Escolha o produto -->
+        <div id="step-1" class="step-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Passo 1: Escolha a Certidão</h2>
+            <div class="flex flex-col">
+                <button class="btn-step" data-type="Certidão de Inteiro Teor" data-price="140.88">
+                    Certidão de Inteiro Teor
+                    <p class="text-sm text-gray-500">Cópia completa de todos os registros da matrícula.</p>
+                    <p class="text-sm font-bold text-emerald-600 mt-2">R$ 140,88</p>
+                </button>
+                <button class="btn-step" data-type="Certidão de Ônus Reais" data-price="127.07">
+                    Certidão de Ônus Reais
+                    <p class="text-sm text-gray-500">Informa se o imóvel possui dívidas, hipotecas ou outras pendências.</p>
+                    <p class="text-sm font-bold text-emerald-600 mt-2">R$ 127,07</p>
+                </button>
+            </div>
+            <div class="flex justify-between mt-8">
+                <button id="back-step-1" class="btn-secondary">Voltar</button>
+            </div>
+        </div>
+
+        <!-- Passo 2: Dados do Pedido -->
+        <div id="step-2" class="step-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Passo 2: Informe os Dados</h2>
+            <div class="space-y-4">
+                <div class="input-group">
+                    <label for="reg-number">Número da Matrícula</label>
+                    <input type="text" id="reg-number" placeholder="Ex: 123456" class="p-3">
+                </div>
+                <div class="input-group">
+                    <label for="applicant-name">Seu Nome Completo</label>
+                    <input type="text" id="applicant-name" placeholder="Nome para a retirada">
+                </div>
+                <div class="input-group">
+                    <label for="comments">Observações (opcional)</label>
+                    <textarea id="comments" rows="3" placeholder="Ex: Urgência, mais detalhes sobre o imóvel"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-between mt-8">
+                <button id="back-step-2" class="btn-secondary">Voltar</button>
+                <button id="next-step-2" class="btn-primary">Avançar</button>
+            </div>
+        </div>
+
+        <!-- Passo 3: Revisão do Pedido -->
+        <div id="step-3" class="step-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Passo 3: Revisão do Pedido</h2>
+            <div id="order-summary" class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <!-- Conteúdo da revisão será inserido aqui pelo JS -->
+            </div>
+            <div class="flex justify-between mt-8">
+                <button id="back-step-3" class="btn-secondary">Voltar</button>
+                <button id="next-step-3" class="btn-primary">Ir para Pagamento</button>
+            </div>
+        </div>
+
+        <!-- Passo 4: Pagamento -->
+        <div id="step-4" class="step-section">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">Passo 4: Pagamento</h2>
+            <p class="text-center text-gray-600 mb-6">Total a Pagar: <span id="payment-total" class="text-2xl font-bold text-emerald-600"></span></p>
+            <div class="flex flex-col items-center justify-center space-y-4">
+                <p class="text-center text-gray-700 text-lg mb-4">
+                    Por favor, apresente o seu cartão na máquina e siga as instruções.
+                </p>
+                <img src="https://placehold.co/200x200/99f6e4/065f46?text=POS" alt="Ícone de máquina de cartão de crédito" class="rounded-xl shadow-md">
+                <p id="payment-status" class="text-lg font-medium mt-4 text-emerald-700">Aguardando pagamento...</p>
+            </div>
+            <div class="flex justify-between mt-8">
+                <button id="back-step-4" class="btn-secondary">Voltar</button>
+                <button id="next-step-4" class="btn-primary">Concluir</button>
+            </div>
+        </div>
+        
+        <!-- Passo 5: Confirmação -->
+        <div id="step-5" class="step-section">
+            <h2 class="text-2xl font-semibold text-center text-gray-800 mb-4">Seu Pedido foi Enviado!</h2>
+            <p class="text-center text-gray-600 mb-6">Em breve você receberá uma confirmação. Acompanhe o pedido pelo seu número único.</p>
+            <div class="bg-emerald-50 p-6 rounded-lg text-center mb-8">
+                <p class="text-xl font-bold text-emerald-700">Número do Pedido:</p>
+                <p id="order-number" class="text-3xl font-extrabold text-emerald-800 mt-2"></p>
+            </div>
+            <div class="flex justify-center">
+                <button onclick="location.reload()" class="btn-primary">Fazer Novo Pedido</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal para mensagens -->
+    <div id="message-modal">
+        <div id="message-modal-content">
+            <p id="message-text" class="mb-4 text-gray-700"></p>
+            <button onclick="document.getElementById('message-modal').style.display='none';" class="btn-primary">OK</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = ['step-0', 'step-0a', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5'];
+            let currentStep = 0;
+            const progressIndicator = document.getElementById('progress-indicator');
+            let order = {
+                type: '',
+                price: 0,
+                regNumber: '',
+                applicantName: '',
+                comments: '',
+                status: 'Recebido'
+            };
+            
+            // Simulação de banco de dados para os pedidos
+            const ordersDb = {
+                "A1B2C3D4": { type: "Certidão de Inteiro Teor", price: 140.88, regNumber: "12345", applicantName: "João da Silva", comments: "", status: "Em Processamento" },
+                "E5F6G7H8": { type: "Certidão de Ônus Reais", price: 127.07, regNumber: "54321", applicantName: "Maria Souza", comments: "Urgente", status: "Pronto para Retirada" },
+                "I9J0K1L2": { type: "Certidão de Inteiro Teor", price: 140.88, regNumber: "98765", applicantName: "Carlos Oliveira", comments: "", status: "Finalizado" }
+            };
+            const statuses = ['Recebido', 'Em Processamento', 'Pronto para Retirada', 'Finalizado'];
+
+            // Função para exibir o modal de mensagem
+            function showMessage(message) {
+                const modal = document.getElementById('message-modal');
+                const messageText = document.getElementById('message-text');
+                messageText.textContent = message;
+                modal.style.display = 'flex';
+            }
+
+            // Atualiza a exibição do passo atual e a barra de progresso
+            function updateStep(step) {
+                sections.forEach((id, index) => {
+                    const section = document.getElementById(id);
+                    if (index === step) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                // A barra de progresso só é relevante a partir do passo de seleção de certidão
+                if (step >= 1) {
+                    progressIndicator.style.width = `${((step - 1) / (sections.length - 2)) * 100}%`;
+                } else {
+                    progressIndicator.style.width = '0%';
+                }
+                window.scrollTo(0, 0); // Volta para o topo da página
+            }
+
+            // Manipula a escolha do menu inicial (Passo 0)
+            document.getElementById('start-new-order').addEventListener('click', () => {
+                currentStep = 2; // Pula para a escolha da certidão
+                updateStep(currentStep);
+            });
+            document.getElementById('go-to-tracking').addEventListener('click', () => {
+                currentStep = 1; // Vai para a tela de acompanhamento
+                updateStep(currentStep);
+            });
+            
+            // Lógica para navegação do Passo 0a (Acompanhamento)
+            document.getElementById('back-step-0a').addEventListener('click', () => {
+                currentStep = 0;
+                updateStep(currentStep);
+            });
+
+            // Lógica do botão "Ver Status"
+            document.getElementById('track-order-btn').addEventListener('click', () => {
+                const orderNumber = document.getElementById('track-order-number').value.trim().toUpperCase();
+                const trackingResult = document.getElementById('tracking-result');
+                const trackingMessage = document.getElementById('tracking-message');
+                const trackingStatus = document.getElementById('tracking-status');
+                
+                const foundOrder = ordersDb[orderNumber];
+                
+                trackingResult.classList.remove('hidden');
+
+                if (foundOrder) {
+                    trackingMessage.textContent = `Status do pedido ${orderNumber}:`;
+                    trackingStatus.textContent = foundOrder.status;
+                    trackingStatus.classList.remove('text-red-600', 'text-orange-600');
+                    if (foundOrder.status === 'Finalizado') {
+                        trackingStatus.classList.add('text-emerald-600');
+                    } else {
+                        trackingStatus.classList.add('text-orange-600');
+                    }
+
+                    // Simulação de atualização de status (para tornar a demo mais dinâmica)
+                    let statusIndex = statuses.indexOf(foundOrder.status);
+                    if (statusIndex < statuses.length - 1) {
+                        setTimeout(() => {
+                            foundOrder.status = statuses[statusIndex + 1];
+                            document.getElementById('track-order-btn').click(); // Re-verifica
+                        }, 2000); // Atualiza a cada 2 segundos
+                    }
+
+                } else {
+                    trackingMessage.textContent = 'Pedido não encontrado.';
+                    trackingStatus.textContent = 'Verifique o número e tente novamente.';
+                    trackingStatus.classList.add('text-red-600');
+                    trackingStatus.classList.remove('text-emerald-600', 'text-orange-600');
+                }
+            });
+
+            // Manipula a escolha do tipo de certidão (Passo 1)
+            document.querySelectorAll('#step-1 .btn-step').forEach(button => {
+                button.addEventListener('click', () => {
+                    order.type = button.dataset.type;
+                    order.price = parseFloat(button.dataset.price);
+                    currentStep = 3; // Pula para o passo de dados
+                    updateStep(currentStep);
+                });
+            });
+            
+            document.getElementById('back-step-1').addEventListener('click', () => {
+                currentStep = 0;
+                updateStep(currentStep);
+            });
+
+            // Lógica para navegação no Passo 2
+            document.getElementById('next-step-2').addEventListener('click', () => {
+                const regNumber = document.getElementById('reg-number').value.trim();
+                const applicantName = document.getElementById('applicant-name').value.trim();
+
+                if (!regNumber || !applicantName) {
+                    showMessage('Por favor, preencha o número da matrícula e seu nome completo para continuar.');
+                    return;
+                }
+
+                order.regNumber = regNumber;
+                order.applicantName = applicantName;
+                order.comments = document.getElementById('comments').value.trim();
+                
+                updateSummary();
+                currentStep = 4;
+                updateStep(currentStep);
+            });
+
+            document.getElementById('back-step-2').addEventListener('click', () => {
+                currentStep = 2;
+                updateStep(currentStep);
+            });
+
+            // Lógica para navegação no Passo 3
+            document.getElementById('next-step-3').addEventListener('click', () => {
+                document.getElementById('payment-total').textContent = `R$ ${order.price.toFixed(2).replace('.', ',')}`;
+                currentStep = 5;
+                updateStep(currentStep);
+            });
+
+            document.getElementById('back-step-3').addEventListener('click', () => {
+                currentStep = 3;
+                updateStep(currentStep);
+            });
+
+            // Lógica para navegação no Passo 4 (Pagamento)
+            document.getElementById('next-step-4').addEventListener('click', () => {
+                const paymentStatus = document.getElementById('payment-status');
+                
+                paymentStatus.textContent = 'Processando pagamento...';
+                
+                setTimeout(() => {
+                    const isPaymentSuccessful = true;
+                    if (isPaymentSuccessful) {
+                        const orderNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
+                        ordersDb[orderNumber] = {...order, status: 'Recebido'};
+                        document.getElementById('order-number').textContent = orderNumber;
+                        paymentStatus.textContent = 'Pagamento aprovado!';
+                        currentStep = 6;
+                        updateStep(currentStep);
+                    } else {
+                        paymentStatus.textContent = 'Pagamento recusado.';
+                        showMessage('O pagamento não foi aprovado. Por favor, tente novamente ou use outro cartão.');
+                    }
+                }, 2000);
+            });
+
+            document.getElementById('back-step-4').addEventListener('click', () => {
+                currentStep = 4;
+                updateStep(currentStep);
+            });
+
+            // Atualiza o resumo do pedido no Passo 3
+            function updateSummary() {
+                const summaryDiv = document.getElementById('order-summary');
+                summaryDiv.innerHTML = `
+                    <p class="text-lg font-semibold text-gray-800 mb-2">Certidão: <span class="text-emerald-600">${order.type}</span></p>
+                    <div class="text-gray-600 space-y-2">
+                        <p><strong>Número da Matrícula:</strong> ${order.regNumber}</p>
+                        <p><strong>Seu Nome:</strong> ${order.applicantName}</p>
+                        <p><strong>Observações:</strong> ${order.comments || 'N/A'}</p>
+                        <p class="mt-4 text-xl font-bold text-gray-800">Total: <span class="text-emerald-600">R$ ${order.price.toFixed(2).replace('.', ',')}</span></p>
+                    </div>
+                `;
+            }
+
+            updateStep(currentStep);
+        });
+    </script>
+
+</body>
+</html>
